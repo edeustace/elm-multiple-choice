@@ -14,3 +14,5 @@ static .
 # go to http://localhost:8080/one-with-flags.html
 
 ```
+
+One.elm is working

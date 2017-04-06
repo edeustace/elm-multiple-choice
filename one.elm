@@ -1,13 +1,10 @@
 module Main exposing (..)
 
 import Html exposing (Html, button, div, br, label, text, input)
-import Html.Attributes exposing (style, name, type_, value, checked)
-import Html.Events exposing (onClick)
 import List exposing (map)
 import Material
 import Material.Scheme
-import Material.Button as Button
-import Material.Options as Options exposing (css)
+import Common exposing(Msg(..))
 import Radio exposing(radio, Choice)
 
 main =
@@ -20,7 +17,6 @@ main =
 type alias Selection = Maybe String
 
 -- MODEL
-
 
 type alias Config =
     { prompt : String
@@ -35,30 +31,22 @@ type alias Model =
 
 
 model : Model
-model =
-    { config =
-        { prompt = "Which number is the greatest?"
-        , choices =
-            [ { label = "One", value = "One" }
+model = 
+  { selection = Maybe.Nothing
+  , mdl = Material.model
+  , config = {
+      prompt = "Which number is the greatest?"
+      , choices = [
+          {label = "One", value = "One"}
             , { label = "Two", value = "Two" }
             , { label = "Three", value = "Three" }
             , { label = "Four", value = "Four" }
-            ]
-        }
-    , selection = Maybe.Nothing
-    , mdl = Material.model
+      ]
     }
-
+  }
 
 
 -- UPDATE
-
-
-type Msg
-    = Choose (Maybe String)
-    | Mdl (Material.Msg Msg)
-    | RM (Radio.Msg)
-
 
 type alias Mdl =
     Material.Model
@@ -67,15 +55,9 @@ type alias Mdl =
 update : Msg -> Model -> Model
 update msg model =
     case msg of
-        Choose (Just value) ->
+        Toggle value selected ->
             { config = model.config
-            , selection = Maybe.Just value
-            , mdl = model.mdl
-            }
-
-        Choose Nothing ->
-            { config = model.config
-            , selection = Nothing
+            , selection = if selected then Maybe.Nothing else Maybe.Just value
             , mdl = model.mdl
             }
 
@@ -85,30 +67,22 @@ update msg model =
             , mdl = model.mdl
             }
 
-getMsg : Radio.Model -> Selection -> Radio.Msg
-getMsg c s =
-    case (isSelected c s) of
-      True -> Radio.Deselect 
-      False -> Radio.Select c.choice.value 
-
-isSelected : Radio.Model -> Selection -> Bool 
-isSelected c s = 
+isSelected : String -> Selection -> Bool 
+isSelected v s = 
     case s of 
-        Just v -> v == c.choice.value 
+        Just selected -> selected == v 
         Nothing -> False
 
-renderChoice : Selection -> Radio.Model -> Html Radio.Msg
-renderChoice s c =
-    radio c (isSelected c s) (getMsg c s)
+mkRadio : Selection -> Mdl -> Choice -> Html Msg 
+mkRadio selection mdl choice =  
+  radio choice (isSelected choice.value selection) mdl
 
-toRadioModel : Material.Model -> Choice -> Radio.Model 
-toRadioModel mdl c =  {mdl = mdl, choice = c}
-  
-view : Model -> Html Radio.Msg
+view : Model -> Html Msg
 view model =
   div []
     [ div [] [ text (model.config.prompt) ]
-    , div [] (map (renderChoice model.selection) (map (toRadioModel model.mdl) model.config.choices))
+    , div [] (map (mkRadio model.selection model.mdl) model.config.choices)
     ] 
+    |> Material.Scheme.top
 
 

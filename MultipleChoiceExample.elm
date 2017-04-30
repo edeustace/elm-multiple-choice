@@ -1,5 +1,6 @@
 module MultipleChoiceExample exposing (..)
 
+import List exposing (map)
 import MultipleChoice exposing(..)
 import ControlBar exposing(..)
 
@@ -14,7 +15,6 @@ main =
 
 type alias Model = {
   mc : MultipleChoice.Data,
-  selected: Maybe String,
   formDisabled: Bool
 } 
 
@@ -25,22 +25,37 @@ type Msg
 
 model = { 
   mc = { 
-  prompt = "hi prompt"
+    prompt = "what is 1 + 1"
   , choices = [
-    { label = "one" , value = "one"}
-    , {label = "two", value = "two" }]}
-    , selected = Just "one" 
+    { 
+        label = "one" 
+      , value = "one"
+      , selected = True
+      , correctness = MultipleChoice.Unknown
+      , feedback = Nothing }
+    , 
+    { 
+        label = "two" 
+      , value = "two"
+      , selected = False 
+      , correctness = MultipleChoice.Unknown
+      , feedback = Nothing }
+    ]
+   }
     , formDisabled = False
-  }
+   }
 
+
+    
 update : Msg -> Model -> Model
 update msg model =
     case msg of
         Toggle value selected -> 
           let 
-            newSelection = if selected then Nothing else Just value
+            newMc = model.mc
+                    |> setChoices (map (toggleChoice value selected) model.mc.choices) 
           in  
-            { model | selected = newSelection }
+            { model | mc = newMc }
         ToggleDisable -> 
           { model | formDisabled = not model.formDisabled} 
 
@@ -50,5 +65,5 @@ view model =
   div [] [ text "mc below"
   , hr [] []
   , ControlBar.view ToggleDisable model.formDisabled
-  , MultipleChoice.view model.mc model.selected model.formDisabled Toggle 
+  , MultipleChoice.view model.mc model.formDisabled Toggle 
   ]

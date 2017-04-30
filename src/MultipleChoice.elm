@@ -5,10 +5,14 @@ import List exposing (map)
 import Html.Attributes exposing (name, style, type_, value, checked, disabled)
 import Html.Events exposing (onClick)
 
+type Correctness = Correct | Incorrect | Unknown 
 
 type alias Choice = {
   label : String
   , value : String
+  , selected : Bool
+  , correctness : Correctness
+  , feedback : Maybe String
 }
 
 type alias Data = {
@@ -16,34 +20,38 @@ type alias Data = {
   choices: List Choice
 }
 
-isSelected value choice = 
-  case value of 
-    Nothing -> False 
-    Just v -> v == choice.value
 
-radio : msg -> Maybe String -> Bool -> Choice -> Html msg
-radio msg selectedValue d choice =
+setChoices : List Choice -> Data -> Data 
+setChoices c d = 
+  {d | choices = c}
 
-  let 
-    selected = isSelected selectedValue choice 
-  in
-    div [] [
-      label []
-        [ input [ 
-          type_ "radio"
-        , disabled d 
-        , value choice.value
-        -- , onClick (Toggle choice.value selected)
-        , onClick msg 
-        , checked selected] []
-        , text choice.label
-        ]
-    ] 
+toggleChoice : String -> Bool -> Choice -> Choice
+toggleChoice v selected choice = 
+  if choice.value == v then 
+    { choice | selected = not choice.selected}
+  else 
+    choice
+
+type alias MakeMsg msg = (String -> Bool -> msg)
+
+radio : MakeMsg msg -> Bool -> Choice -> Html msg
+radio makeMsg d choice =
+  div [] [
+    label []
+      [ input [ 
+        type_ "radio"
+      , disabled d 
+      , value choice.value
+      , onClick (makeMsg choice.value choice.selected) 
+      , checked choice.selected] []
+      , text choice.label
+      ]
+  ] 
 
 
-view : Data -> Maybe String -> Bool -> (String -> Bool -> msg) ->Html msg 
-view data selectedValue disabled mkMsg = 
+view : Data -> Bool -> (MakeMsg msg) -> Html msg 
+view data disabled makeMsg = 
   div [] 
       [ div [] [ text data.prompt ]
       , hr [] []
-      , div [] (map (radio (mkMsg "one" True) selectedValue disabled) data.choices) ]
+      , div [] (map (radio makeMsg disabled) data.choices) ]

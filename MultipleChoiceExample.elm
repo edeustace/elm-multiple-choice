@@ -21,11 +21,13 @@ type alias Model = {
 type Msg 
   = Toggle String Bool 
   | ToggleDisable
+  | ChooseMode Mode
 
 
 model = { 
   mc = { 
     prompt = "what is 1 + 1"
+  , mode = MultipleChoice.Checkbox
   , choices = [
     { 
         label = "one" 
@@ -53,17 +55,22 @@ update msg model =
         Toggle value selected -> 
           let 
             newMc = model.mc
-                    |> setChoices (map (toggleChoice value selected) model.mc.choices) 
+                    |> setChoices (map (toggleChoice value selected model.mc.mode) model.mc.choices) 
           in  
             { model | mc = newMc }
         ToggleDisable -> 
           { model | formDisabled = not model.formDisabled} 
+        ChooseMode m ->
+          let 
+            newMc = model.mc |> setMode m 
+           in
+            { model | mc = newMc}
 
 
 view : Model -> Html Msg
 view model = 
   div [] [ text "mc below"
   , hr [] []
-  , ControlBar.view ToggleDisable model.formDisabled
+  , ControlBar.view ToggleDisable ChooseMode model.mc.mode model.formDisabled
   , MultipleChoice.view model.mc model.formDisabled Toggle 
   ]

@@ -1,4 +1,5 @@
 module MultipleChoice exposing (..)
+import ListUtils exposing (mapFirst, mapExceptFirst)
 
 import Html exposing (Html, button, div, hr, label, text, input)
 import List exposing (map)
@@ -22,9 +23,27 @@ type alias Data = {
   mode : Mode,
   choices: List Choice
 }
+      
+  
+updateChoices : Mode -> Data -> Data
+updateChoices mode d =
+  if mode == Checkbox then 
+    d  
+  else 
+    let 
+      newChoices = mapExceptFirst (\c -> c.selected == True) (\c -> {c | selected = False}) d.choices
+    in
+      { d | choices = newChoices }
+
+newMode : Mode -> Data -> Data
+newMode m d = 
+  { d | mode = m}
 
 setMode : Mode -> Data -> Data 
-setMode  m d = { d | mode = m}
+setMode  m d = 
+  d 
+   |> updateChoices m
+   |> newMode m
 
 setChoices : List Choice -> Data -> Data 
 setChoices c d = 

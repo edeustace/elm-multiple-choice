@@ -35,6 +35,8 @@ init = ({
     { 
         label = "one" 
       , value = "one"
+      , correct = Nothing
+      , feedback = Nothing 
     }
      
     ]

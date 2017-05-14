@@ -1,4 +1,6 @@
 *.js
 elm-stuff
 node_modules
+bundle.js
+
 

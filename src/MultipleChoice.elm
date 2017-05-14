@@ -1,8 +1,8 @@
 module MultipleChoice exposing (..)
-import ListUtils exposing (mapFirst, mapExceptFirst)
+-- import ListUtils exposing (mapFirst, mapExceptFirst)
 
 import Html exposing (Html, button, div, hr, label, text, input)
-import List exposing (map, member)
+import List exposing (map, member, filter, sort, append)
 import Html.Attributes exposing (name, style, type_, value, checked, disabled)
 import Html.Events exposing (onClick)
 
@@ -15,16 +15,37 @@ type alias Choice = {
   value : String
 }
 
+type alias Complete = {
+  min : Int 
+}
+
 type alias Model = {
   prompt: String,
-  mode : Mode,
+  mode: String,
+  choiceMode : String,
   choices: List Choice,
-  session : Session
+  complete : Complete,
+  disabled: Bool,
+  keyMode: String
 }
 
 type alias Session = {
   value : List String 
 }
+
+
+addValueToSession : String -> String -> Session -> Session 
+addValueToSession choiceMode value session =
+  if member value session.value then 
+    -- remove it 
+    { session | value = filter (\n -> n /= value) session.value }
+  else 
+    -- add it 
+    if choiceMode == "radio" then 
+      { session | value = [value] }  
+    else 
+      { session | value = sort (append session.value [value]) }
+
 
   
 -- deselectAllButFirst : Mode -> Model -> Model  
@@ -36,9 +57,9 @@ type alias Session = {
 --     in
 --       { d | choices = newChoices }
 
-newMode : Mode -> Model ->Model 
-newMode m d = 
-  { d | mode = m}
+-- newMode : Mode -> Model ->Model 
+-- newMode m d = 
+--   { d | mode = m}
 
 -- setMode : Mode -> Model -> Model 
 -- setMode  mode data = 
@@ -46,9 +67,9 @@ newMode m d =
 --    |> (\d -> if mode == Checkbox then d else deselectAllButFirst mode d) 
 --    |> newMode mode
 
-setChoices : List Choice -> Model -> Model 
-setChoices c d = 
-  {d | choices = c}
+-- setChoices : List Choice -> Model -> Model 
+-- setChoices c d = 
+--   {d | choices = c}
 
 -- toggleChoice : String -> Bool -> Mode -> Choice -> Choice
 -- toggleChoice v selected mode choice = 
@@ -60,7 +81,7 @@ setChoices c d =
 --     in 
 --       { choice | selected = selected } 
 
-type alias MakeMsg msg = (String -> Bool -> msg)
+type alias MakeMsg msg = (String -> msg)
 
 isSelected : String -> Session -> Bool 
 isSelected v session = member v session.value 
@@ -77,19 +98,16 @@ radio t makeMsg d session choice=
           type_ t 
         , disabled d 
         , value choice.value
-        , onClick (makeMsg choice.value selected) 
+        , onClick (makeMsg choice.value) 
         , checked selected] []
         , text choice.label
         ]
     ] 
 
 
-view : Model -> Bool -> (MakeMsg msg) -> Html msg 
-view data disabled makeMsg =
-  let 
-    choiceType = if data.mode == Radio then "radio" else "checkbox" 
-  in 
-    div [] 
-        [ div [] [ text data.prompt ]
-        , hr [] []
-        , div [] (map (radio choiceType makeMsg disabled data.session) data.choices) ]
+view : Model -> Session -> (MakeMsg msg) -> Html msg 
+view model session makeMsg =
+  div [] 
+      [ div [] [ text model.prompt ]
+      , hr [] []
+      , div [] (map (radio model.choiceMode makeMsg model.disabled session) model.choices) ]

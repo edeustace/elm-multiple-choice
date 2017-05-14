@@ -1,29 +1,29 @@
 module ListUtils exposing(mapFirst, mapExceptFirst)
 
 import List exposing (head, tail, append, foldr, foldl)
-import Maybe exposing (withDefault)
 
 type alias Predicate a = a -> Bool 
 type alias Fn a = a -> a 
 
-innerMapFirst : Predicate a -> Fn a -> Bool -> List a -> List a -> List a 
-innerMapFirst predicate mapFn hasMapped output rest =
-  if hasMapped then 
-    append output rest 
-  else
-    case head rest of
-      Just(h) -> 
-        if predicate h then 
-          let 
-            newOutput = append output [(mapFn h)]
-          in 
-            innerMapFirst predicate mapFn True newOutput (withDefault [] (tail rest))
-        else 
-          innerMapFirst predicate mapFn False (append output [h]) (withDefault [] (tail rest))
-      Nothing -> output
-
 mapFirst : Predicate a -> Fn a -> List a -> List a 
-mapFirst predicate mapFn list = innerMapFirst predicate mapFn False [] list
+mapFirst predicate mapFn list = 
+  let 
+    mf : a -> (Bool, List a) -> (Bool, List a)
+    mf el acc = 
+      let 
+        (hasMapped, arr) = acc 
+      in 
+        if hasMapped then 
+          (hasMapped, (append arr [el]))
+        else 
+          if predicate el then 
+            (True, (append arr [mapFn el]))
+          else 
+            (False, (append arr [el]))
+    (_, out) = foldl mf (False, []) list
+  in 
+    out
+
 
 
 -- maps all the values except the first element that matches the predicate.

@@ -23,15 +23,28 @@ type alias Data = {
   mode : Mode,
   choices: List Choice
 }
+
+type alias RawChoice = {
+  label : String
+  , value: String 
+  , selected: Bool 
+  , correctness: String
+  , feedback: Maybe String 
+}
+
+type alias RawData = {
+  prompt: String, 
+  mode: String,
+  choices: List RawChoice 
+}
       
   
-updateChoices : Mode -> Data -> Data
-updateChoices mode d =
-  if mode == Checkbox then 
-    d  
-  else 
-    let 
-      newChoices = mapExceptFirst (\c -> c.selected == True) (\c -> {c | selected = False}) d.choices
+deselectAllButFirst : Mode -> Data -> Data
+deselectAllButFirst mode d =
+    let
+      isSelected = (\c -> c.selected == True) 
+      deselect = (\c -> {c | selected = False}) 
+      newChoices = mapExceptFirst isSelected deselect d.choices
     in
       { d | choices = newChoices }
 
@@ -40,10 +53,10 @@ newMode m d =
   { d | mode = m}
 
 setMode : Mode -> Data -> Data 
-setMode  m d = 
-  d 
-   |> updateChoices m
-   |> newMode m
+setMode  mode data = 
+  data 
+   |> (\d -> if mode == Checkbox then d else deselectAllButFirst mode d) 
+   |> newMode mode
 
 setChoices : List Choice -> Data -> Data 
 setChoices c d = 

@@ -16,3 +16,12 @@ static .
 ```
 
 One.elm is working
+
+
+## MultipleChoiceExample
+
+```bash
+elm make MultipleChoiceExample.elm --output=MultipleChoiceExample.js
+static .
+# go to http://localhost:8080/MultipleChoiceExample.html
+```

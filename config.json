@@ -1,0 +1,166 @@
+{
+  "id": "1",
+  "element": "corespring-choice",
+  "defaultLang": "en-US",
+  "langs": [
+    "en-US",
+    "es-ES",
+    "zh-CN"
+  ],
+  "prompt": [
+    {
+      "lang": "en-US",
+      "value": "Which of these northern European countries are EU members?"
+    },
+    {
+      "lang": "es-ES",
+      "value": "¿Cuál de estos países del norte de Europa son miembros de la UE?"
+    },
+    {
+      "lang": "zh-CN",
+      "value": "这些北欧国家中哪个是欧盟成员？"
+    }
+  ],
+  "choiceMode": "checkbox",
+  "keyMode": "numbers",
+  "choices": [
+    {
+      "correct": true,
+      "value": "sweden",
+      "label": [
+        {
+          "lang": "en-US",
+          "value": "Sweden"
+        },
+        {
+          "lang": "es-ES",
+          "value": "Suecia"
+        },
+        {
+          "lang": "zh-CN",
+          "value": "瑞典"
+        }
+      ],
+      "feedback": {
+        "type": "custom",
+        "custom": [
+          {
+            "lang": "en-US",
+            "value": "Sweden joined in 1995"
+          },
+          {
+            "lang": "es-ES",
+            "value": "Suecia se unió a la UE en 1995"
+          },
+          {
+            "lang": "zh-CN",
+            "value": "瑞典于1995年加入欧盟"
+          }
+        ]
+      }
+    },
+    {
+      "value": "iceland",
+      "label": [
+        {
+          "lang": "en-US",
+          "value": "Iceland"
+        },
+        {
+          "lang": "es-ES",
+          "value": "Islandia"
+        },
+        {
+          "lang": "zh-CN",
+          "value": "冰岛"
+        }
+      ],
+      "feedback": {
+        "type": "custom",
+        "custom": [
+          {
+            "lang": "en-US",
+            "value": "Iceland is not an EU member state"
+          },
+          {
+            "lang": "es-ES",
+            "value": "Islandia no es un estado miembro de la UE"
+          },
+          {
+            "lang": "zh-CN",
+            "value": "冰岛不是欧盟成员国"
+          }
+        ]
+      }
+    },
+    {
+      "value": "norway",
+      "label": [
+        {
+          "lang": "en-US",
+          "value": "Norway"
+        },
+        {
+          "lang": "es-ES",
+          "value": "Noruega"
+        },
+        {
+          "lang": "zh-CN",
+          "value": "挪威"
+        }
+      ],
+      "feedback": {
+        "type": "custom",
+        "custom": [
+          {
+            "lang": "en-US",
+            "value": "Norway is not an EU member, but they are a member for the Single Market"
+          },
+          {
+            "lang": "es-ES",
+            "value": "Noruega no es miembro de la UE, sino que son un miembro de Mercado Único"
+          },
+          {
+            "lang": "zh-CN",
+            "value": "挪威不是欧盟成员国，但他们是单一市场的成员"
+          }
+        ]
+      }
+    },
+    {
+      "correct": true,
+      "value": "finland",
+      "label": [
+        {
+          "lang": "en-US",
+          "value": "Finland"
+        },
+        {
+          "lang": "es-ES",
+          "value": "Finlandia"
+        },
+        {
+          "lang": "zh-CN",
+          "value": "芬兰"
+        }
+      ],
+      "feedback": {
+        "type": "custom",
+        "custom": [
+          {
+            "lang": "en-US",
+            "value": "Finland joined the EU in 1995"
+          },
+          {
+            "lang": "es-ES",
+            "value": "Finlandia se unió a la UE en 1995"
+          },
+          {
+            "lang": "zh-CN",
+            "value": "芬兰于1995年加入欧盟"
+          }
+        ]
+      }
+    }
+  ]
+}

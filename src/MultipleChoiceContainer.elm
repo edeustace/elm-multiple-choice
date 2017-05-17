@@ -24,6 +24,7 @@ type alias Model = {
 init = ({ 
   model = { 
     prompt = "This is a prompt"
+  , responseCorrect = Nothing
   , mode = "gather"
   , choiceMode = "checkbox" 
   , complete = {
@@ -50,6 +51,7 @@ init = ({
 type Msg = 
    Toggle String 
  | ModelUpdate Model
+ | ToggleCorrectAnswer Bool
 
 
 port sessionUpdated : MultipleChoice.Session -> Cmd msg
@@ -57,14 +59,16 @@ port sessionUpdated : MultipleChoice.Session -> Cmd msg
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
     case Debug.log "got msg" msg of
-        Toggle value -> 
-          let
-            s = model.session 
-              |> addValueToSession model.model.choiceMode value 
-          in  
-            ({ model | session = s }, sessionUpdated s)
+      Toggle value -> 
+        let
+          s = model.session 
+            |> addValueToSession model.model.choiceMode value 
+        in  
+          ({ model | session = s }, sessionUpdated s)
 
-        ModelUpdate m -> (m, Cmd.none)
+      ModelUpdate m -> (m, Cmd.none)
+      -- todo...
+      ToggleCorrectAnswer t -> (model, Cmd.none)
 
 port modelUpdate : (Model -> msg) -> Sub msg
 
@@ -80,5 +84,5 @@ view model =
   in 
     div [] [ text "mc below -----"
     , hr [] []
-    , MultipleChoice.view model.model model.session Toggle 
+    , MultipleChoice.view model.model model.session Toggle ToggleCorrectAnswer 
     ]

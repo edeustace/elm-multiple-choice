@@ -4,3 +4,12 @@
 .incorrect {
   background-color: lightcoral;
 }
+
+.correct-answer-toggle {
+  background-color: red;
+  opacity: 0.0;
+}  
+
+.visible{
+   opacity: 1.0;
+}

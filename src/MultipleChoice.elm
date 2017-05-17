@@ -20,7 +20,7 @@ type alias Complete = {
   min : Int 
 }
 
-type alias Model = {
+type alias Config = {
   prompt: String,
   mode: String,
   choiceMode : String,
@@ -35,8 +35,43 @@ type alias Session = {
   value : List String 
 }
 
+type alias Model = {
+  config : Config, 
+  session : Session,
+  isShowingCorrect : Bool
+}
+
 type Msg = 
   ToggleShowCorrectAnswer Bool 
+
+  
+initialModel : Model 
+initialModel = { 
+  config = { 
+    prompt = "This is a prompt"
+  , responseCorrect = Nothing
+  , mode = "gather"
+  , choiceMode = "checkbox" 
+  , complete = {
+    min = 2
+  }
+  , disabled = False
+  , keyMode = "numbers"
+  , choices = [
+    { 
+        label = "one" 
+      , value = "one"
+      , correct = Nothing
+      , feedback = Nothing 
+    }
+     
+    ]
+   }
+   , session = {
+     value = []
+   }
+   , isShowingCorrect = False
+ }
 
 addValueToSession : String -> String -> Session -> Session 
 addValueToSession choiceMode value session =
@@ -158,19 +193,26 @@ correctAnswerToggle mm responseCorrect choices =
   in 
     div [class clazz, onClick (mm True)] [ text "Show correct answer" ]
 
-view : Model -> Session -> (MakeMsg msg) -> (Bool -> msg) -> Html msg 
-view model session makeMsg toggleMsg =
-  let 
-    { choices, choiceMode, keyMode, disabled, mode} = model 
-    cui = (indexedMap 
-      (toUi mode choiceMode keyMode makeMsg disabled (isSelected session) ) 
-      model.choices)
-  in 
+update : Msg -> Model -> (Model, Cmd Msg) 
+update message model = 
+  case message of 
+    ToggleShowCorrectAnswer isShowing -> 
+      ({ model | isShowingCorrect = not isShowing }, Cmd.none)
+
+view : Model -> Html Msg 
+view model =
+  -- let 
+    -- { choices, choiceMode, keyMode, disabled, mode} = model 
+    -- cui = (indexedMap 
+    --   (toUi mode choiceMode keyMode makeMsg disabled (isSelected session) ) 
+    --   model.choices)
+  -- in 
     div [] 
-        [
-          correctAnswerToggle toggleMsg model.responseCorrect model.choices 
-        , div [] [ text model.prompt ]
-        , hr [] []
-        , div [] (map choice cui)
+        [ 
+          text "hi"
+        --   correctAnswerToggle toggleMsg model.responseCorrect model.choices 
+        -- , div [] [ text model.prompt ]
+        -- , hr [] []
+        -- , div [] (map choice cui)
         -- , div [] (map (radio model.choiceMode makeMsg model.disabled session) model.choices) 
         ]

@@ -17,14 +17,41 @@ main =
 -- {"id":"1","element":"corespring-choice","defaultLang":"en-US","langs":["en-US","es-ES","zh-CN"],"prompt":"Which of these northern European countries are EU members?","choiceMode":"checkbox","keyMode":"numbers","choices":[{"value":"sweden","label":"Sweden"},{"value":"iceland","label":"Iceland"},{"value":"norway","label":"Norway"},{"value":"finland","label":"Finland"}],"complete":{"min":2},"disabled":false,"mode":"gather"}"
 
 type alias Model = {
-  mc : MultipleChoice.Model
+  model : MultipleChoice.Model,
+  session : MultipleChoice.Session
 }
 
-init = ({ mc = MultipleChoice.initialModel }, Cmd.none)
+init = ({ 
+  model = { 
+    prompt = "This is a prompt"
+  , responseCorrect = Nothing
+  , mode = "gather"
+  , choiceMode = "checkbox" 
+  , complete = {
+    min = 2
+  }
+  , disabled = False
+  , keyMode = "numbers"
+  , choices = [
+    { 
+        label = "one" 
+      , value = "one"
+      , correct = Nothing
+      , feedback = Nothing 
+    }
+     
+    ]
+   }
+   , session = {
+     value = []
+   }
+   }, Cmd.none)
 
 
 type Msg = 
-  McMsg MultipleChoice.Msg 
+   Toggle String 
+ | ModelUpdate Model
+ | ToggleCorrectAnswer Bool
 
 
 port sessionUpdated : MultipleChoice.Session -> Cmd msg
@@ -32,18 +59,22 @@ port sessionUpdated : MultipleChoice.Session -> Cmd msg
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
     case Debug.log "got msg" msg of
-      McMsg subMsg ->
-        let 
-          (update, cmd) = MultipleChoice.update subMsg model.mc
-        in 
-          ({ model | mc = update }, Cmd.map McMsg cmd)
+      Toggle value -> 
+        let
+          s = model.session 
+            |> addValueToSession model.model.choiceMode value 
+        in  
+          ({ model | session = s }, sessionUpdated s)
 
+      ModelUpdate m -> (m, Cmd.none)
+      -- todo...
+      ToggleCorrectAnswer t -> (model, Cmd.none)
 
--- port modelUpdate : (Model -> msg) -> Sub msg
+port modelUpdate : (Model -> msg) -> Sub msg
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-   Sub.none  
+   modelUpdate ModelUpdate 
 
 
 view : Model -> Html Msg
@@ -53,5 +84,5 @@ view model =
   in 
     div [] [ text "mc below -----"
     , hr [] []
-    , Html.map McMsg (MultipleChoice.view model.mc)
+    , MultipleChoice.view model.model model.session Toggle ToggleCorrectAnswer 
     ]

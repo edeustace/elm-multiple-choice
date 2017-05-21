@@ -35,8 +35,11 @@ update msg model =
       McMsg subMsg ->
         let 
           (update, cmd) = MultipleChoice.update subMsg model.mc
+          o = case subMsg of 
+            MultipleChoice.ToggleShowCorrectAnswer b -> sessionUpdated model.mc.session 
         in 
-          ({ model | mc = update }, Cmd.map McMsg cmd)
+
+          ({ model | mc = update }, Cmd.batch [Cmd.map McMsg cmd, o])
 
 
 -- port modelUpdate : (Model -> msg) -> Sub msg

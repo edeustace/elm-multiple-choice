@@ -43,6 +43,7 @@ type alias Model = {
 
 type Msg = 
   ToggleShowCorrectAnswer Bool 
+  | ToggleChoice String
 
   
 initialModel : Model 
@@ -125,8 +126,8 @@ type alias MakeMsg msg = (String -> msg)
 isSelected :  Session -> String -> Bool 
 isSelected session value = member value session.value 
 
-choiceInput : String -> MakeMsg msg -> Bool -> Bool -> Choice -> Html msg
-choiceInput t makeMsg d selected choice =
+choiceInput : String -> Bool -> Bool -> Choice -> Html Msg
+choiceInput t d selected choice =
 
   div [] [
     label []
@@ -134,29 +135,29 @@ choiceInput t makeMsg d selected choice =
         type_ t 
       , disabled d 
       , value choice.value
-      , onClick (makeMsg choice.value) 
+      , onClick (ToggleChoice choice.value) 
       , checked selected] []
       , text choice.label
       ]
   ] 
 
-type alias ChoiceUi msg  = {
+type alias ChoiceUi = {
   key: String,
   c : Choice,
   selected : Bool,
   choiceMode : String,
   mode : String, 
-  mkMsg : (MakeMsg msg),
   disabled : Bool
 }
+
 feedback : String -> Html msg
 feedback msg = 
   div [class "feedback"] [
     text msg
   ]
 
-choice : ChoiceUi msg -> Html msg 
-choice {c,choiceMode, key, mkMsg, disabled, selected, mode} = 
+choice : ChoiceUi -> Html Msg 
+choice {c,choiceMode, key, disabled, selected, mode} = 
   let 
     clazz = case (selected, c.correct, mode) of 
       (True, Just True, "evaluate") -> "correct"
@@ -168,18 +169,17 @@ choice {c,choiceMode, key, mkMsg, disabled, selected, mode} =
   in 
     div [class clazz] (append [ 
       text key 
-    , choiceInput choiceMode mkMsg disabled selected c
+    , choiceInput choiceMode disabled selected c
     ] fb)
     
 
-toUi : String -> String -> String -> (MakeMsg msg) -> Bool -> (String -> Bool) -> Int -> Choice -> ChoiceUi msg 
-toUi mode choiceMode keyMode mkMsg disabled isSelected index choice = 
+toUi : Config -> (String -> Bool) -> Int -> Choice -> ChoiceUi 
+toUi {keyMode, choiceMode, mode, disabled} isSelected index choice = 
   { c = choice,
     key = if keyMode == "numbers" then toString (index + 1) else "?",
     selected = isSelected choice.value,
     choiceMode = choiceMode, 
     mode = mode,
-    mkMsg = mkMsg,
     disabled = disabled }
 
 
@@ -198,21 +198,22 @@ update message model =
   case message of 
     ToggleShowCorrectAnswer isShowing -> 
       ({ model | isShowingCorrect = not isShowing }, Cmd.none)
+    ToggleChoice value -> (model, Cmd.none)
 
 view : Model -> Html Msg 
 view model =
-  -- let 
-    -- { choices, choiceMode, keyMode, disabled, mode} = model 
-    -- cui = (indexedMap 
-    --   (toUi mode choiceMode keyMode makeMsg disabled (isSelected session) ) 
-    --   model.choices)
-  -- in 
+  let 
+    { config, session } = model 
+    cui = (indexedMap 
+       (toUi config (isSelected session))
+       config.choices)
+  in 
     div [] 
         [ 
           text "hi"
         --   correctAnswerToggle toggleMsg model.responseCorrect model.choices 
-        -- , div [] [ text model.prompt ]
-        -- , hr [] []
-        -- , div [] (map choice cui)
+         , div [] [ text config.prompt ]
+         , hr [] []
+         , div [] (map choice cui)
         -- , div [] (map (radio model.choiceMode makeMsg model.disabled session) model.choices) 
         ]

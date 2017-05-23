@@ -25,7 +25,8 @@ init = ({ mc = MultipleChoice.initialModel }, Cmd.none)
 
 type Msg = 
   McMsg MultipleChoice.Msg 
-
+ | ConfigUpdate MultipleChoice.Config
+ | SessionUpdate MultipleChoice.Session
 
 port sessionUpdated : MultipleChoice.Session -> Cmd msg
    
@@ -37,16 +38,34 @@ update msg model =
           (update, cmd) = MultipleChoice.update subMsg model.mc
           o = case subMsg of 
             MultipleChoice.ToggleShowCorrectAnswer b -> sessionUpdated model.mc.session 
+            _ -> Cmd.none
         in 
 
           ({ model | mc = update }, Cmd.batch [Cmd.map McMsg cmd, o])
+      -- mc model sent in ..
+      ConfigUpdate newConfig -> 
+        let 
+          {mc} = model
+          newMc = {mc | config = newConfig}
+          update = { model | mc = newMc}
+        in 
+          (update, Cmd.none)
+      SessionUpdate newSession -> 
+        let 
+          {mc} = model 
+          newMc = {mc | session = newSession}
+        in 
+          ({model | mc = newMc}, Cmd.none)
 
-
--- port modelUpdate : (Model -> msg) -> Sub msg
+port configUpdate : (MultipleChoice.Config -> msg) -> Sub msg
+port sessionUpdate : (MultipleChoice.Session -> msg) -> Sub msg
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-   Sub.none  
+  Sub.batch [
+    configUpdate ConfigUpdate   
+  , sessionUpdate SessionUpdate
+  ]
 
 
 view : Model -> Html Msg

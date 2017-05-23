@@ -198,7 +198,12 @@ update message model =
   case message of 
     ToggleShowCorrectAnswer isShowing -> 
       ({ model | isShowingCorrect = not isShowing }, Cmd.none)
-    ToggleChoice value -> (model, Cmd.none)
+    ToggleChoice value -> 
+      let
+        s = model.session 
+          |> addValueToSession model.config.choiceMode value 
+      in  
+        ({ model | session = s }, Cmd.none)
 
 view : Model -> Html Msg 
 view model =
@@ -210,9 +215,8 @@ view model =
   in 
     div [] 
         [ 
-          text "hi"
         --   correctAnswerToggle toggleMsg model.responseCorrect model.choices 
-         , div [] [ text config.prompt ]
+           div [] [ text config.prompt ]
          , hr [] []
          , div [] (map choice cui)
         -- , div [] (map (radio model.choiceMode makeMsg model.disabled session) model.choices) 

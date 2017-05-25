@@ -5,10 +5,6 @@ import List exposing (indexedMap, map, member, filter, sort, append, foldl, fold
 import Html.Attributes exposing (class, name, style, type_, value, checked, disabled)
 import Html.Events exposing (onClick)
 
-type Correctness = Correct | Incorrect | Unknown 
-
-type Mode = Radio | Checkbox 
-
 type alias Choice = {
   label : String,
   value : String,
@@ -41,11 +37,20 @@ type alias Model = {
   isShowingCorrect : Bool
 }
 
-type Msg = 
-  ToggleShowCorrectAnswer Bool 
-  | ToggleChoice String
+type alias ChoiceUi = {
+  key: String,
+  c : Choice,
+  selected : Bool,
+  choiceMode : String,
+  mode : String, 
+  disabled : Bool
+}
 
+type Msg = 
+  ToggleShowCorrectAnswer 
+  | ToggleChoice String
   
+
 initialModel : Model 
 initialModel = { 
   config = { 
@@ -65,7 +70,6 @@ initialModel = {
       , correct = Nothing
       , feedback = Nothing 
     }
-     
     ]
    }
    , session = {
@@ -87,48 +91,11 @@ addValueToSession choiceMode value session =
       { session | value = sort (append session.value [value]) }
 
 
-  
--- deselectAllButFirst : Mode -> Model -> Model  
--- deselectAllButFirst mode d =
---     let
---       isSelected = (\c -> c.selected == True) 
---       deselect = (\c -> {c | selected = False}) 
---       newChoices = mapExceptFirst isSelected deselect d.choices
---     in
---       { d | choices = newChoices }
-
--- newMode : Mode -> Model ->Model 
--- newMode m d = 
---   { d | mode = m}
-
--- setMode : Mode -> Model -> Model 
--- setMode  mode data = 
---   data 
---    |> (\d -> if mode == Checkbox then d else deselectAllButFirst mode d) 
---    |> newMode mode
-
--- setChoices : List Choice -> Model -> Model 
--- setChoices c d = 
---   {d | choices = c}
-
--- toggleChoice : String -> Bool -> Mode -> Choice -> Choice
--- toggleChoice v selected mode choice = 
---   if choice.value == v then 
---     { choice | selected = not choice.selected}
---   else
---     let 
---       selected = if mode == Radio then False else choice.selected 
---     in 
---       { choice | selected = selected } 
-
-type alias MakeMsg msg = (String -> msg)
-
-isSelected :  Session -> String -> Bool 
+isSelected : Session -> String -> Bool 
 isSelected session value = member value session.value 
 
 choiceInput : String -> Bool -> Bool -> Choice -> Html Msg
 choiceInput t d selected choice =
-
   div [] [
     label []
       [ input [ 
@@ -141,14 +108,6 @@ choiceInput t d selected choice =
       ]
   ] 
 
-type alias ChoiceUi = {
-  key: String,
-  c : Choice,
-  selected : Bool,
-  choiceMode : String,
-  mode : String, 
-  disabled : Bool
-}
 
 feedback : String -> Html msg
 feedback msg = 
@@ -172,32 +131,42 @@ choice {c,choiceMode, key, disabled, selected, mode} =
     , choiceInput choiceMode disabled selected c
     ] fb)
     
+correctResponseToUi :  Config -> Int -> Choice -> ChoiceUi 
+correctResponseToUi config index choice = 
+  choiceUi config (choice.correct == Just True) index choice  
 
-toUi : Config -> (String -> Bool) -> Int -> Choice -> ChoiceUi 
-toUi {keyMode, choiceMode, mode, disabled} isSelected index choice = 
+isSelectedToUi : Config -> (String -> Bool) -> Int -> Choice -> ChoiceUi 
+isSelectedToUi config isSelected index choice = 
+  choiceUi config (isSelected choice.value) index choice
+
+choiceUi : Config -> Bool -> Int -> Choice -> ChoiceUi 
+choiceUi {keyMode, choiceMode, mode, disabled} selected index choice = 
   { c = choice,
     key = if keyMode == "numbers" then toString (index + 1) else "?",
-    selected = isSelected choice.value,
+    selected = selected,
     choiceMode = choiceMode, 
     mode = mode,
     disabled = disabled }
 
-
-correctAnswerToggle : (Bool -> msg) -> Maybe Bool -> List Choice -> Html msg 
-correctAnswerToggle mm responseCorrect choices = 
+correctAnswerToggle : Bool -> Maybe Bool -> List Choice -> Html Msg 
+correctAnswerToggle isToggled responseCorrect choices = 
   let
     base = ["correct-answer-toggle"]
-    withExtras = (append base [(if responseCorrect == Just False then "visible" else "")])
+    withExtras = (append base [
+      (if responseCorrect == Just False then "visible" else ""),
+      (if isToggled then "toggled" else "")
+      ])
+    msg = (if isToggled then "Hide" else "Show") ++ " correct answer"
     s = (intersperse " " withExtras)
     clazz = (foldr (++) "" s)
   in 
-    div [class clazz, onClick (mm True)] [ text "Show correct answer" ]
+    div [class clazz, onClick ToggleShowCorrectAnswer] [ text msg ]
 
 update : Msg -> Model -> (Model, Cmd Msg) 
 update message model = 
   case message of 
-    ToggleShowCorrectAnswer isShowing -> 
-      ({ model | isShowingCorrect = not isShowing }, Cmd.none)
+    ToggleShowCorrectAnswer -> 
+      ({ model | isShowingCorrect = not model.isShowingCorrect }, Cmd.none)
     ToggleChoice value -> 
       let
         s = model.session 
@@ -205,19 +174,24 @@ update message model =
       in  
         ({ model | session = s }, Cmd.none)
 
+reset : Model -> Model 
+reset model = 
+  { model | isShowingCorrect = False }
+
 view : Model -> Html Msg 
 view model =
   let 
-    { config, session } = model 
-    cui = (indexedMap 
-       (toUi config (isSelected session))
-       config.choices)
+    { config, session } = model
+
+    uiChoices = if model.isShowingCorrect then 
+      (indexedMap (correctResponseToUi config) config.choices) 
+    else 
+      (indexedMap (isSelectedToUi config (isSelected session)) config.choices)
   in 
     div [] 
         [ 
-        --   correctAnswerToggle toggleMsg model.responseCorrect model.choices 
-           div [] [ text config.prompt ]
+           correctAnswerToggle model.isShowingCorrect model.config.responseCorrect model.config.choices 
+         , div [] [ text config.prompt ]
          , hr [] []
-         , div [] (map choice cui)
-        -- , div [] (map (radio model.choiceMode makeMsg model.disabled session) model.choices) 
+         , div [] (map choice uiChoices)
         ]

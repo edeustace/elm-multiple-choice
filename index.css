@@ -6,10 +6,42 @@
 }
 
 .correct-answer-toggle {
-  background-color: red;
   opacity: 0.0;
+  display: flex;
+  align-items: center;
+  user-select: none;
+  cursor: pointer;
 }  
 
 .visible{
    opacity: 1.0;
+}
+
+.show-icon-one{
+  fill: #D0CAC5;
+  stroke: #E6E3E0;
+  stroke-width: 0.75;
+  stroke-miterlimit: 10;
+}
+
+.show-icon-two{
+  fill: #B3ABA4;
+  stroke: #CDC7C2;
+  stroke-width: 0.5;
+  stroke-miterlimit: 10;
+}
+.show-icon-background,
+.hide-icon-background{
+  fill: white;
+  stroke: lightblue;
+}
+.show-icon-border,
+.show-icon-foreground,
+.hide-icon-foreground{
+  fill: lightblue;
+}
+
+.icon-holder{
+  display: block;
+  width: 30px;
 }

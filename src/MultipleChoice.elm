@@ -1,5 +1,6 @@
 module MultipleChoice exposing (..)
 
+import CorrectAnswerToggle as Toggle 
 import Html exposing (Html, button, div, hr, label, text, input)
 import List exposing (indexedMap, map, member, filter, sort, append, foldl, foldr, product, intersperse)
 import Html.Attributes exposing (class, name, style, type_, value, checked, disabled)
@@ -148,20 +149,6 @@ choiceUi {keyMode, choiceMode, mode, disabled} selected index choice =
     mode = mode,
     disabled = disabled }
 
-correctAnswerToggle : Bool -> Maybe Bool -> List Choice -> Html Msg 
-correctAnswerToggle isToggled responseCorrect choices = 
-  let
-    base = ["correct-answer-toggle"]
-    withExtras = (append base [
-      (if responseCorrect == Just False then "visible" else ""),
-      (if isToggled then "toggled" else "")
-      ])
-    msg = (if isToggled then "Hide" else "Show") ++ " correct answer"
-    s = (intersperse " " withExtras)
-    clazz = (foldr (++) "" s)
-  in 
-    div [class clazz, onClick ToggleShowCorrectAnswer] [ text msg ]
-
 update : Msg -> Model -> (Model, Cmd Msg) 
 update message model = 
   case message of 
@@ -190,7 +177,7 @@ view model =
   in 
     div [] 
         [ 
-           correctAnswerToggle model.isShowingCorrect model.config.responseCorrect model.config.choices 
+           Toggle.view  model.isShowingCorrect model.config.responseCorrect ToggleShowCorrectAnswer 
          , div [] [ text config.prompt ]
          , hr [] []
          , div [] (map choice uiChoices)

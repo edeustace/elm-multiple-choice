@@ -1,0 +1,33 @@
+body{
+  background-color: lightblue;
+}
+
+.thing{
+  padding: 20px;
+  background-color: red;
+  opacity: 1;
+  transition: opacity linear 0.2s;
+}
+
+
+.toggle{
+  transition: opacity linear 0.2s;
+}
+
+.enter {
+  opacity: 0.01;
+}
+
+.enter.enter-active {
+  opacity: 1;
+  transition: opacity 500ms ease-in;
+}
+
+.leave {
+  opacity: 1;
+}
+
+.leave.leave-active {
+  opacity: 0.01;
+  transition: opacity 300ms ease-in;
+}

@@ -15,19 +15,25 @@ body{
 }
 
 .enter {
+  position: absolute;
   opacity: 0.01;
 }
 
+
+.toggle-icon-root{
+  position: relative;
+}
 .enter.enter-active {
   opacity: 1;
-  transition: opacity 500ms ease-in;
+  transition: opacity 200ms ease-in;
 }
 
 .leave {
+  position: absolute;
   opacity: 1;
 }
 
 .leave.leave-active {
   opacity: 0.01;
-  transition: opacity 300ms ease-in;
+  transition: opacity 200ms ease-in;
 }

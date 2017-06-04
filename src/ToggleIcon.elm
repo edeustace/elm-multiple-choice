@@ -50,15 +50,29 @@ update msg model =
         LeaveActive -> ({model | toggled = False, state = s}, Cmd.none)
 
 
+show model = 
+  let 
+    classes = case model.state of 
+      Leave -> ["enter"]
+      _ -> ["enter", "enter-active"]
+    expanded = (map (\c -> (c, True)) classes)
+    clazz = classList expanded 
+  in 
+    div [clazz, onClick Toggle] [text "show"]
+  
+hide model = 
+  let 
+    classes = case model.state of 
+      Enter -> ["leave"]
+      _ -> ["leave", "leave-active"]
+    expanded = (map (\c -> (c, True)) classes)
+    clazz = classList expanded 
+  in 
+    div [clazz, onClick Toggle] [text "hide"]
+
 view : Model -> Html Msg
 view model =
-  let
-    classes = case model.state of 
-      Enter -> ["enter"]
-      EnterActive -> ["enter" ,"enter-active"]
-      Leave -> ["leave"]
-      LeaveActive -> ["leave", "leave-active"]
-    expanded = (map (\c -> (c, True)) classes)
-    clazz  = classList expanded 
-  in 
-    div [clazz, onClick Toggle] [text (if model.toggled then "showing!" else "not showing!" )]
+  div [onClick Toggle] [
+      show model, 
+      hide model
+    ]
